@@ -1,11 +1,15 @@
+#ifndef UPDATER_H
+#define UPDATER_H
+
 #include <Arduino.h>
 
 class Updater
 {
 public:
-    Updater(/* args */);
+    Updater();
     ~Updater();
 
-    // Optional functionality
-    void TryUpdate(char* token);                                       
-}
+    void TryUpdate(const char* token, const char* filename);                                       
+};
+
+#endif

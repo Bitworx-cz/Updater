@@ -15,17 +15,31 @@
 #include <Update.h>
 
 // Constructor
-Updater::Updater() {
-    Serial.println("Updater created");
+Updater::Updater()
+{
+    lastCheck = 0;
 }
 
 // Destructor
-Updater::~Updater() {
-    Serial.println("Updater destroyed");
+Updater::~Updater()
+{
 }
 
 // Correct member function definition
-void Updater::TryUpdate(const char* token, const char* sketchName) {
+void Updater::TryUpdate(const char *token, const char *sketchName)
+{
+
+    if (millis() < lastCheck)
+    {
+        lastCheck = 0;
+    }
+
+    if (millis() - lastCheck < 600000)
+    {
+        return;
+    }
+
+    lastCheck = millis();
     HTTPClient http;
     char url[200];
     sprintf(url, "http://espupdater.runasp.net/%s/%s/%012llx/%s",
@@ -35,40 +49,36 @@ void Updater::TryUpdate(const char* token, const char* sketchName) {
     http.begin(url);
 
     int httpCode = http.GET();
-    if (httpCode == HTTP_CODE_OK) {
+    if (httpCode == HTTP_CODE_OK)
+    {
         int contentLength = http.getSize();
-        if (contentLength > 0) {
+        if (contentLength > 0)
+        {
             bool canBegin = Update.begin(contentLength);
-            if (canBegin) {
-                Serial.println("Begin OTA update...");
-                WiFiClient* client = http.getStreamPtr();
+            if (canBegin)
+            {
+                WiFiClient *client = http.getStreamPtr();
                 size_t written = Update.writeStream(*client);
 
-                if (written == contentLength) {
-                    Serial.println("Written: " + String(written) + " bytes successfully");
-                } else {
-                    Serial.println("Written only: " + String(written) + "/" + String(contentLength) + ". Retry?");
-                }
-
-                if (Update.end()) {
-                    if (Update.isFinished()) {
-                        Serial.println("Update finished. Rebooting...");
-                        ESP.restart();
-                    } else {
-                        Serial.println("Update not finished? Something went wrong.");
+                if (written == contentLength)
+                {
+                    if (Update.end())
+                    {
+                        if (Update.isFinished())
+                        {
+                            char udUrl[200];
+                            sprintf(udUrl, "http://espupdater.runasp.net/ud/%s/%s/%012llx/%s",
+                                    token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
+                            Serial.println(udUrl);
+                            http.begin(udUrl);
+                            http.GET();
+                            http.end();
+                            ESP.restart();
+                        }
                     }
-                } else {
-                    Serial.println("Error occurred. Error #: " + String(Update.getError()));
                 }
-            } else {
-                Serial.println("Not enough space to begin OTA");
             }
-        } else {
-            Serial.println("Content length is not valid");
         }
-    } else {
-        Serial.println("Failed to download firmware. HTTP error code: " + String(httpCode));
-    }
-
+    };
     http.end();
 }

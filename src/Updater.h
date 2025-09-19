@@ -10,6 +10,8 @@ public:
     ~Updater();
 
     void TryUpdate(const char* token, const char* filename);                                       
-};
 
+private:
+    unsigned long lastCheck;
+};
 #endif

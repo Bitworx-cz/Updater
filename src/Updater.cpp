@@ -25,10 +25,13 @@ Updater::~Updater()
 {
 }
 
-// Correct member function definition
 void Updater::TryUpdate(const char *token, const char *sketchName)
 {
+    TryUpdate(token, sketchName, "http://espupdater.runasp.net/");
+}
 
+void Updater::TryUpdate(const char *token, const char *sketchName, const char *baseUrl)
+{
     if (millis() < lastCheck)
     {
         lastCheck = 0;
@@ -41,9 +44,23 @@ void Updater::TryUpdate(const char *token, const char *sketchName)
 
     lastCheck = millis();
     HTTPClient http;
-    char url[200];
-    sprintf(url, "http://espupdater.runasp.net/%s/%s/%012llx/%s",
-            token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
+
+    // --- Normalize base URL ---
+    char normalizedBase[128];
+    size_t len = strlen(baseUrl);
+    if (len > 0 && baseUrl[len - 1] == '/')
+    {
+        snprintf(normalizedBase, sizeof(normalizedBase), "%s", baseUrl);
+    }
+    else
+    {
+        snprintf(normalizedBase, sizeof(normalizedBase), "%s/", baseUrl);
+    }
+
+    // --- Construct URLs ---
+    char url[256];
+    snprintf(url, sizeof(url), "%s%s/%s/%012llx/%s",
+             normalizedBase, token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
     Serial.println(url);
 
     http.begin(url);
@@ -66,9 +83,9 @@ void Updater::TryUpdate(const char *token, const char *sketchName)
                     {
                         if (Update.isFinished())
                         {
-                            char udUrl[200];
-                            sprintf(udUrl, "http://espupdater.runasp.net/ud/%s/%s/%012llx/%s",
-                                    token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
+                            char udUrl[256];
+                            snprintf(udUrl, sizeof(udUrl), "%sud/%s/%s/%012llx/%s",
+                                     normalizedBase, token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
                             Serial.println(udUrl);
                             http.begin(udUrl);
                             http.GET();
@@ -79,6 +96,8 @@ void Updater::TryUpdate(const char *token, const char *sketchName)
                 }
             }
         }
-    };
+    }
+
     http.end();
 }
+

@@ -38,12 +38,11 @@ void loop() {
     // Your normal logic here...
 
     // Example: check for updates every few hours
-    updater.TryUpdate("yourTokenHere", "yourSwName.ino");
+    updater.TryUpdate("yourTokenHere");
 }
 ```
 
 * Replace **`yourTokenHere`** with the token you generated
-* Replace **`yourSwName.ino`** with your firmware name
 
 ---
 

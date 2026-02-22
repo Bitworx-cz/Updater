@@ -9,8 +9,8 @@ public:
     Updater();
     ~Updater();
 
-    void TryUpdate(const char* token, const char* filename);    
-    void TryUpdate(const char* token, const char* filename, const char* baseUrl);                                       
+    void TryUpdate(const char* token);
+    void TryUpdate(const char* token, const char* baseUrl);                                     
                                    
 
 private:

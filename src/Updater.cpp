@@ -25,12 +25,12 @@ Updater::~Updater()
 {
 }
 
-void Updater::TryUpdate(const char *token, const char *sketchName)
+void Updater::TryUpdate(const char *token)
 {
-    TryUpdate(token, sketchName, "http://espupdater.runasp.net/");
+    TryUpdate(token, "https://updaterapi.premiumasp.net/");
 }
 
-void Updater::TryUpdate(const char *token, const char *sketchName, const char *baseUrl)
+void Updater::TryUpdate(const char *token, const char *baseUrl)
 {
     if (millis() < lastCheck)
     {
@@ -59,8 +59,8 @@ void Updater::TryUpdate(const char *token, const char *sketchName, const char *b
 
     // --- Construct URLs ---
     char url[256];
-    snprintf(url, sizeof(url), "%s%s/%s/%012llx/%s",
-             normalizedBase, token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
+    snprintf(url, sizeof(url), "%sdownload/%s/%012llx",
+             normalizedBase, token, ESP.getEfuseMac());
     Serial.println(url);
 
     http.begin(url);
@@ -84,8 +84,8 @@ void Updater::TryUpdate(const char *token, const char *sketchName, const char *b
                         if (Update.isFinished())
                         {
                             char udUrl[256];
-                            snprintf(udUrl, sizeof(udUrl), "%sud/%s/%s/%012llx/%s",
-                                     normalizedBase, token, sketchName, ESP.getEfuseMac(), ESP.getChipModel());
+                            snprintf(udUrl, sizeof(udUrl), "%supdate-done/%s/%012llx",
+                                     normalizedBase, token, ESP.getEfuseMac());
                             Serial.println(udUrl);
                             http.begin(udUrl);
                             http.GET();

@@ -16,8 +16,8 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Verzia 5");
+  Serial.println("Version 1"); //up this version to see update
   delay(5000);
 
-  updater.TryUpdate("token", "AutomaticUpdate.ino");
+  updater.TryUpdate("token");
 }
